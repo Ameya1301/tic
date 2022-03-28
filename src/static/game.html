@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title>
+    <script type="text/javascript" src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
+</head>
+<body>
+    <button onclick="join()"> joined</button>
+    <button onclick="leave()">leave</button>
+    <p></p>
+    <div id="game"></div>
+
+    <script>
+        var host = window.document.location.host.replace(/:.*/, '');
+        console.log(host);
+        // var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':'+location.port : ''));
+        var client = new Colyseus.Client('ws://localhost:3000');
+        var room;
+
+        function join() {
+            client.joinOrCreate("tictactoe").then((room_instance, client)=> {
+                console.log("joined the room");
+                room = room_instance;
+                console.log("joined Successfully");
+         
+                this.room.onMessage("joined Successfully", (message) => {
+                    console.log("message received from server");
+                    console.log(message);
+                })
+
+                //game display
+                addGame();
+
+                
+
+                // onAdd
+                room.state.turnMap.onAdd = function (turn, turnId){
+                    console.log('changes recd:',turn, turnId);
+                }
+                
+                console.log(room.state);
+                room.state.listen("turn", (currentValue, previousValue) => {
+                    console.log(`currentTurn is now ${currentValue}`);
+                    console.log(`previous value was: ${previousValue}`);
+                });
+
+                
+            });
+        }
+            
+            
+
+        function addGame () {
+               var dom = document.getElementById("game");
+               for(let i=0; i<9; i++)
+               {    
+                    const btn = document.createElement("button");
+                    const text = document.createTextNode(i+1);
+                    btn.appendChild(text);
+                    dom.appendChild(btn);
+                    btn.onclick = function(){console.log('hello i am button number ',i)};
+                }
+        }
+
+        function leave(){
+            console.log(room);
+            if(room) {
+                room.connection.close();
+                console.log("ending room");
+            } else {
+                console.log("room already ended");
+            }
+        }
+
+    </script>
+
+</body>
+</html>

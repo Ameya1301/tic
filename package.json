@@ -1,0 +1,19 @@
+{
+  "name": "tictactoe2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/index.ts"
+  },
+  "author": "ameya",
+  "license": "ISC",
+  "dependencies": {
+    "colyseus": "^0.14.23"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.2"
+  }
+}
