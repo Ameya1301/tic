@@ -19,7 +19,7 @@
         // var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':'+location.port : ''));
         var client = new Colyseus.Client('ws://localhost:3000');
         var room;
-
+        var currentClient;
         function join() {
             client.joinOrCreate("tictactoe").then((room_instance, client)=> {
                 console.log("joined the room");
@@ -27,27 +27,46 @@
                 console.log("joined Successfully");
          
                 this.room.onMessage("joined Successfully", (message) => {
-                    console.log("message received from server");
+                    console.log("message received from server:");
+                    currentClient = message;
                     console.log(message);
                 })
 
                 //game display
                 addGame();
-
+               
                 
 
                 // onAdd
                 room.state.turnMap.onAdd = function (turn, turnId){
                     console.log('changes recd:',turn, turnId);
+
+                //     client.userMap.onChange = function (changes) {
+                        
+                // }
+
                 }
                 
-                console.log(room.state);
-                room.state.listen("turn", (currentValue, previousValue) => {
-                    console.log(`currentTurn is now ${currentValue}`);
-                    console.log(`previous value was: ${previousValue}`);
+                // console.log(room.state);
+
+                room.onMessage("playerTurn", (message) => {
+                    console.log("message received from server");
+                    console.log(message);
                 });
 
+
+                room.state.listen("CurrentTurn", (currentValue, previousValue) => {
+                    if(this.room.sessionId === currentValue){
+                        console.log("player: ",currentValue);
+                    }
+                    //player display turn
+
+                });
                 
+   
+
+
+
             });
         }
             
@@ -61,7 +80,10 @@
                     const text = document.createTextNode(i+1);
                     btn.appendChild(text);
                     dom.appendChild(btn);
-                    btn.onclick = function(){console.log('hello i am button number ',i)};
+                    btn.onclick = function(){
+                        room.send("move", i);
+                    };
+                    
                 }
         }
 
