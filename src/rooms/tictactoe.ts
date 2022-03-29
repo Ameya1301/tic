@@ -1,15 +1,15 @@
 import {Room, Client} from "colyseus";
 import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
 
-var j = 0;
+
 
 
 class Client2 extends Schema {
     client:Client;
-    myTurn:boolean;
+    // myTurn:boolean;
     Client2(client){
         this.client = client;
-        this.myTurn = false;
+        // this.myTurn = false;
     }
 }
 
@@ -22,11 +22,11 @@ class Client2 extends Schema {
 
 class Turn extends Schema {
     sessionId: String;
-    position: Number;
+    // position: Number;
 
-    Turn(sessionId: String,position: Number){
+    Turn(sessionId: String){
         this.sessionId = sessionId;
-        this.position = position;
+        // this.position = position;
     }
 }
 
@@ -39,7 +39,7 @@ export class Game extends Schema {
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
     @type("string") CurrentTurn = "";
-    
+    @type("number") j = 0;
    
     Game(){
         for(let i=0; i<9; i++)
@@ -53,6 +53,7 @@ export class Game extends Schema {
         // console.log(this.turn);
 
         this.userMap.set(client.sessionId, new Client2(client));
+        
         // console.log(this.userMap);
              
         
@@ -62,26 +63,37 @@ export class Game extends Schema {
         
         // check in turn map if position is used or not if used return false else return true
         
-        // if(this.turnMap.get(position.toString()) === undefined)
-        // {
-            this.turnMap.set(position.toString(), new Turn(sessionId,position));
-            
-        // } else {
-            // return false;
-        // }
+        if(this.turnMap.get(position.toString()) === undefined)
+        {
+            this.turnMap.set(position.toString(), new Turn(sessionId));
+            this.j++;
+            console.log("inserted");
+        } else {
+            return false;
+        }
+
+        //game logic (winner/lossser) 
 
 
-
-        // console.log(this.turnMap);
+       
         console.log('display key0: ');
-        console.log(this.turnMap);
+        // console.log(this.turnMap);
         console.log("\n\n");
 
 
         /////////////////////////////////////////////////////////////
         // printing undefined
-        console.log(this.turnMap.get(position.toString()).sessionId);
-        console.log(this.turnMap.get(position.toString()).position);
+        // console.log(this.turnMap[position.toString()]);
+
+        // console.log(this.turnMap[String(position)]);
+        
+        this.turnMap.forEach((value,key)=> {
+            // value.Turn.bin
+            console.log(value);
+            console.log("sessionid: ", value);
+            console.log("key: ", key);
+        });
+       
         // console.log(this.turnMap.values());
         ////////////////////////////////////////////////////////////
 
@@ -96,7 +108,7 @@ export class Game extends Schema {
 
             if(currentSessionId !== key){
                 this.CurrentTurn = key;
-                console.log(this.CurrentTurn);
+                // console.log(this.CurrentTurn);
             }
         });
     }
@@ -121,7 +133,7 @@ export class Game extends Schema {
         {   
             this.CurrentTurn = this.userMap.keys().next().value;
             console.log("Starting current turn: ", this.CurrentTurn);
-            j=0;
+            
             
             // this.turnMap.clear();
         }
@@ -174,6 +186,11 @@ export class Tictactoe extends Room {
     onCreate(options) {
         console.log("Room Created");
         this.setState(new Game());
+
+        // let a: Map<string,string> = new Map();
+        // a["2"] = "3";
+        // a["1"] = "2";
+        // console.log(a["2"]);
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
