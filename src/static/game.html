@@ -78,7 +78,15 @@
                     var dom = document.getElementById("player");
                     if(currentValue >= 9)
                     {
-                        dom.innerText = "Game Over";
+                        dom.innerText = "Draw";
+                    }
+                });
+
+                room.state.listen("game", (currentValue, previousValue) => {
+                    var dom = document.getElementById("player");
+                    if(currentValue === true)
+                    {
+                        dom.innerText = "Winner";
                     }
                 });
 

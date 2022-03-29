@@ -6,60 +6,39 @@ import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
 
 class Client2 extends Schema {
     client:Client;
-    // myTurn:boolean;
+    
     Client2(client){
         this.client = client;
-        // this.myTurn = false;
+        
     }
 }
 
-// class CurrentTurn extends Schema {
-//     turn : string="";
-//     CurrentTurn(){
-//         this.turn = '';
-//     }
-// }
+
 
 class Turn extends Schema {
     sid: String;
-    // position: Number;
-
-    Turn(sessionId: String){
-        this.sid = sessionId;
-        // this.position = position;
-    }
+    
 }
 
 export class Game extends Schema {
-    @type([ "number" ]) gameArr = new ArraySchema<number>();
-    
-    // @type("string")  turn;
-    // userMap:Map<string,Client>;
-    //session ID - client obj
 
     @type({ map: Client2 }) userMap = new MapSchema<Client2>();
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
     @type("string") CurrentTurn = "";
     @type("number") j = 0;
-   
-    Game(){
-        // for(let i=0; i<9; i++)
-        // {
-        //     this.gameArr.push(-1);
-        // }   
-    }  
-    
+    @type("boolean") game;
 
     createPlayer(client: Client){
-        // console.log(this.turn);
+        
 
         this.userMap.set(client.sessionId, new Client2(client));
         
-        // console.log(this.userMap);
              
         
     }
+
+
     createTurn(sessionId:string, position: Number){
         console.log("position: ",position);
         console.log(sessionId);
@@ -67,15 +46,17 @@ export class Game extends Schema {
         
         if(this.turnMap.get(position.toString()) === undefined)
         {
-            this.turnMap.set(position.toString(), new Turn(sessionId));
+            var a = new Turn();
+            a.sid = sessionId;
+            this.turnMap.set(position.toString(), a);
+
+            
             this.j++;
             console.log("inserted");
         } else {
             return false;
         }
-
-       
-        //game logic (winner/lossser) 
+        
         let winner = [
             [0, 1, 2],
             [3, 4, 5],
@@ -84,30 +65,67 @@ export class Game extends Schema {
             [1, 4, 7],
             [2, 5, 8],
             [0, 4, 8],
-            [2, 4, 6],
+            [2, 4, 6]
         ]
 
+        if( this.j>=5)
+        {
+            
+                var x,y,z;
+
+            for(let i = 0; i<8; i++)
+            {
+
+                this.turnMap.forEach((value, key)=>{
+                    if(winner[i][0].toString() === key)
+                    {
+                        x = value.sid;
+                        console.log(x);
+                    }
+                    else if(winner[i][1].toString() === key)
+                    {
+                        y = value.sid;
+                        console.log(y);
+                    }
+                    else if(winner[i][2].toString() === key)
+                    {
+                        z = value.sid;
+                        console.log(z);
+                    }
+
+
+                });
+                console.log(x, y, z);
+                if(x == y && y == z)
+                {
+                    console.log("winner");
+                    this.game = true;
+                    break;
+                } 
+                else if(this.j>=9) {
+                    console.log("draw");
+                    this.game = false;
+                    break;
+
+                }
+            }
+        }
+
        
-        // console.log('display key0: ');
-        // console.log(this.turnMap);
+      
         console.log("\n\n");
 
 
-        /////////////////////////////////////////////////////////////
-        // printing undefined
-        // console.log(this.turnMap[position.toString()]);
-
-        // console.log(this.turnMap[String(position)]);
+      
         
         this.turnMap.forEach((value,key)=> {
             // value.Turn.bin
             // console.log(value);
-            console.log("sessionid: ", value);
+            console.log("sessionid: ", value.sid);
             console.log("key: ", key);
         });
        
-        // console.log(this.turnMap.values());
-        ////////////////////////////////////////////////////////////
+       
 
         return true;
         
@@ -115,12 +133,12 @@ export class Game extends Schema {
 
     playNextTurn(currentSessionId: string){
        
-        //Changing the pplayer turn
+        
         this.userMap.forEach( (value, key) => {
 
             if(currentSessionId !== key){
                 this.CurrentTurn = key;
-                // console.log(this.CurrentTurn);
+                
             }
         });
     }
@@ -131,58 +149,24 @@ export class Game extends Schema {
     }
 
     
-    // addToArray() {
-    //     let t = new Turn('sessionid',4);
-    //     console.log(this.turnMap);
-    //     this.turnMap.set('123', new Turn('111',12));
-
-    //     this.turnMap.set("test2",t);
-    //     // this.turn+=1;
-    // }
+   
     
     startGame(maxClients: number){
         if(maxClients === this.userMap.size)
         {   
             this.CurrentTurn = this.userMap.keys().next().value;
             console.log("Starting current turn: ", this.CurrentTurn);
+          
             
-            
-            // this.turnMap.clear();
         }
-
-   
-        
-        //set turn session id
-
-        // 
-
-        // console.log(this.turn);
-        //     console.log("game can start");
-
-            // this.turn.turn = this.userMap.keys[0];
-            // console.log(this.turn);
-            // // where to set
-            // this.turn = this.userMap.keys[1];
-            // if(this.turn.turn === this.userMap.keys[1])
-            //     this.turn.turn = this.userMap.keys[0];
-            // else if(this.turn.turn === this.userMap.keys[0])
-            //     this.turn.turn = this.userMap.keys[1];
-            
+      
             
     }
     
    
 
-
-    
           
-        // var i=0;
-        // var intervalID = setInterval( () => {
-        //     i+=1;
-        //     let t = new Turn('sessionid',4);
-        //     console.log("Startgame: ",this.turnMap);
-        //     this.turnMap.set(i.toString(), new Turn('111',12));
-        // }, 2000);
+        
         
 }
     
@@ -213,6 +197,7 @@ export class Tictactoe extends Room {
             else {
         
             }
+           
 
         });
     }
