@@ -10,8 +10,11 @@
 <body>
     <button onclick="join()"> joined</button>
     <button onclick="leave()">leave</button>
+    <div id="player"></div>
     <p></p>
     <div id="game"></div>
+    
+
 
     <script>
         var host = window.document.location.host.replace(/:.*/, '');
@@ -56,13 +59,30 @@
 
 
                 room.state.listen("CurrentTurn", (currentValue, previousValue) => {
+                    var dom = document.getElementById("player");
                     if(this.room.sessionId === currentValue){
                         console.log("player: ",currentValue);
+                        //player display turn
+                        const h1 = document.createElement("h1");
+                        const text = document.createTextNode("Your Turn");
+                        h1.appendChild(text);
+                        dom.appendChild(h1);
+                        
                     }
-                    //player display turn
+                    
+                    // } else {
+                    //     var dom = document.getElementById("player");
+                    //     dom.remove();
 
+                    // }
                 });
                 
+                room.state.listen("hTurn", (currentValue, previousValue) => {
+                    
+                    // var dom = document.getElementById("player");
+                    //     dom.remove();
+          
+                });
    
 
 

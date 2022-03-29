@@ -1,6 +1,7 @@
 import {Room, Client} from "colyseus";
 import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
-var j =0;
+
+var j = 0;
 
 
 class Client2 extends Schema {
@@ -20,11 +21,11 @@ class Client2 extends Schema {
 // }
 
 class Turn extends Schema {
-    // sessionId: string;
-    position: number;
+    sessionId: String;
+    position: Number;
 
-    Turn( position){
-        // this.sessionId = sessionId;
+    Turn(sessionId: String,position: Number){
+        this.sessionId = sessionId;
         this.position = position;
     }
 }
@@ -37,9 +38,9 @@ export class Game extends Schema {
     @type({ map: Client2 }) userMap = new MapSchema<Client2>();
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
-     @type("string") CurrentTurn = "";
-    
-    
+    @type("string") CurrentTurn = "";
+    @type("boolean") hTurn = true;
+   
     Game(){
         for(let i=0; i<9; i++)
         {
@@ -51,9 +52,53 @@ export class Game extends Schema {
     createPlayer(client: Client){
         // console.log(this.turn);
 
-        // console.log(this.userMap);
         this.userMap.set(client.sessionId, new Client2(client));
+        // console.log(this.userMap);
+             
         
+    }
+    createTurn(sessionId:string, position: Number){
+        console.log("position: ",position);
+        
+        // check in turn map if position is used or not if used return false else return true
+        
+        // if(this.turnMap.get(position.toString()) === undefined)
+        // {
+            this.turnMap.set(position.toString(), new Turn(sessionId,position));
+            this.hTurn = !this.hTurn;
+        // } else {
+            // return false;
+        // }
+
+
+
+        // console.log(this.turnMap);
+        console.log('display key0: ');
+        console.log(this.turnMap);
+        console.log("\n\n");
+
+
+        /////////////////////////////////////////////////////////////
+        // printing undefined
+        console.log(this.turnMap.get(position.toString()).sessionId);
+        console.log(this.turnMap.get(position.toString()).position);
+        // console.log(this.turnMap.values());
+        ////////////////////////////////////////////////////////////
+
+        return true;
+        
+    }
+
+    playNextTurn(currentSessionId: string){
+       
+        //Changing the pplayer turn
+        this.userMap.forEach( (value, key) => {
+
+            if(currentSessionId !== key){
+                this.CurrentTurn = key;
+                console.log(this.CurrentTurn);
+            }
+        });
     }
 
     removePlayer(sessionId: string) {
@@ -75,14 +120,10 @@ export class Game extends Schema {
         if(maxClients === this.userMap.size)
         {   
             this.CurrentTurn = this.userMap.keys().next().value;
-           
+            console.log("Starting current turn: ", this.CurrentTurn);
+            j=0;
             
             // this.turnMap.clear();
-           
-            
-
-           
-
         }
 
    
@@ -109,9 +150,7 @@ export class Game extends Schema {
    
 
 
-    playTurn(){
-        
-    }
+    
           
         // var i=0;
         // var intervalID = setInterval( () => {
@@ -138,22 +177,14 @@ export class Tictactoe extends Room {
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
-           
-            console.log(this.state.turnMap.forEach((value, key)=> {
-                console.log(value.position);
-                console.log(key);
-            }));
-
-            console.log("j: ",j);
-            // this.state.turnMap.set(j , new Turn(message));
-            this.state.turnMap[j] = new Turn(message);
+            var turn = this.state.createTurn(client.sessionId,message);
+            if( turn === true){
+                this.state.playNextTurn(client.sessionId);
+            } 
+            else {
         
-            j++;
+            }
 
-            console.log(this.state.turnMap.get(j-1));
-
-            
-            
         });
     }
 
