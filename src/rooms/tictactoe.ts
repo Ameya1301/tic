@@ -39,7 +39,7 @@ export class Game extends Schema {
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
     @type("string") CurrentTurn = "";
-    @type("boolean") hTurn = true;
+    
    
     Game(){
         for(let i=0; i<9; i++)
@@ -65,7 +65,7 @@ export class Game extends Schema {
         // if(this.turnMap.get(position.toString()) === undefined)
         // {
             this.turnMap.set(position.toString(), new Turn(sessionId,position));
-            this.hTurn = !this.hTurn;
+            
         // } else {
             // return false;
         // }

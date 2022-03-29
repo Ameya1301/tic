@@ -68,21 +68,16 @@
                         h1.appendChild(text);
                         dom.appendChild(h1);
                         
-                    }
-                    
-                    // } else {
-                    //     var dom = document.getElementById("player");
-                    //     dom.remove();
-
                     // }
+                    
+                    } else {
+                        var dom = document.getElementById("player");
+                        dom.innerText = "";
+
+                    }
                 });
                 
-                room.state.listen("hTurn", (currentValue, previousValue) => {
-                    
-                    // var dom = document.getElementById("player");
-                    //     dom.remove();
-          
-                });
+               
    
 
 
