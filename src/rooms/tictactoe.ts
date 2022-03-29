@@ -21,20 +21,22 @@ class Client2 extends Schema {
 // }
 
 class Turn extends Schema {
-    sessionId: String;
+    sid: String;
     // position: Number;
 
     Turn(sessionId: String){
-        this.sessionId = sessionId;
+        this.sid = sessionId;
         // this.position = position;
     }
 }
 
 export class Game extends Schema {
     @type([ "number" ]) gameArr = new ArraySchema<number>();
+    
     // @type("string")  turn;
     // userMap:Map<string,Client>;
     //session ID - client obj
+
     @type({ map: Client2 }) userMap = new MapSchema<Client2>();
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
@@ -42,10 +44,10 @@ export class Game extends Schema {
     @type("number") j = 0;
    
     Game(){
-        for(let i=0; i<9; i++)
-        {
-            this.gameArr.push(-1);
-        }   
+        // for(let i=0; i<9; i++)
+        // {
+        //     this.gameArr.push(-1);
+        // }   
     }  
     
 
@@ -60,7 +62,7 @@ export class Game extends Schema {
     }
     createTurn(sessionId:string, position: Number){
         console.log("position: ",position);
-        
+        console.log(sessionId);
         // check in turn map if position is used or not if used return false else return true
         
         if(this.turnMap.get(position.toString()) === undefined)
@@ -72,11 +74,21 @@ export class Game extends Schema {
             return false;
         }
 
+       
         //game logic (winner/lossser) 
-
+        let winner = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ]
 
        
-        console.log('display key0: ');
+        // console.log('display key0: ');
         // console.log(this.turnMap);
         console.log("\n\n");
 
@@ -89,7 +101,7 @@ export class Game extends Schema {
         
         this.turnMap.forEach((value,key)=> {
             // value.Turn.bin
-            console.log(value);
+            // console.log(value);
             console.log("sessionid: ", value);
             console.log("key: ", key);
         });
