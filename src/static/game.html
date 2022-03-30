@@ -10,6 +10,8 @@
 <body>
     <button onclick="join()"> joined</button>
     <button onclick="leave()">leave</button>
+    <div id="turn"></div>
+    <div id="result"></div>
     <div id="player"></div>
     <p></p>
     <div id="game"></div>
@@ -17,6 +19,8 @@
 
 
     <script>
+
+
         var host = window.document.location.host.replace(/:.*/, '');
         console.log(host);
         // var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':'+location.port : ''));
@@ -25,6 +29,8 @@
         var currentClient;
         function join() {
             client.joinOrCreate("tictactoe").then((room_instance, client)=> {
+
+               
                 console.log("joined the room");
                 room = room_instance;
                 console.log("joined Successfully");
@@ -57,7 +63,7 @@
 
 
                 room.state.listen("CurrentTurn", (currentValue, previousValue) => {
-                    var dom = document.getElementById("player");
+                    var dom = document.getElementById("result");
                     if(this.room.sessionId === currentValue){
                         console.log("player: ",currentValue);
                         //player display turn
@@ -76,38 +82,94 @@
                 
                 room.state.listen("j", (currentValue, previousValue) => {
                     var dom = document.getElementById("player");
-                    if(currentValue >= 9)
+                    console.log("current value of j: ",currentValue);
+                    if(currentValue === 100)
+                    {
+                        dom.innerText = "Game Over";
+
+                    }
+                    else if(currentValue >= 9)
                     {
                         dom.innerText = "Draw";
                     }
                 });
 
-                room.state.listen("game", (currentValue, previousValue) => {
+
+                room.state.listen("gameWinner", (currentValue, previousValue) => {
                     var dom = document.getElementById("player");
-                    if(currentValue === true)
-                    {
-                        dom.innerText = "Winner";
-                    }
+                    console.log("from game winner: ",currentValue);
+                    console.log(this.room.sessionId);
+                    if(this.room.sessionId === currentValue){
+                        
+                        const h1 = document.createElement("h1");
+                        const text = document.createTextNode("Winner");
+                        h1.appendChild(text);
+                        dom.appendChild(h1);
+                        
+                    // }
+                    
+                    } 
+                });
+               
+
+                room.onMessage('l1',(l1)=>{
+                    render(l1,"X");
                 });
 
-            });
+                room.onMessage('l2',(l2)=>{
+                    render(l2,"O");
+                });
+
+                function render(l,symbol){
+                    for(let i=0; i<l.length; i++)
+                    {
+                        document.getElementsByTagName("button")[l[i]+2].innerText = symbol;
+                        document.getElementsByTagName("button")[l[i]+2].disabled = true;
+                        
+                    }
+                }
+                
+                
+                room.onMessage('turn',(currTurn)=>{
+                    var dom = document.getElementById('turn');
+                    dom.innerText = "player: "+ currTurn;
+                });
+                                             
+            });       
         }
             
-            
+        
+        
+        
 
         function addGame () {
                var dom = document.getElementById("game");
                for(let i=0; i<9; i++)
                {    
                     const btn = document.createElement("button");
-                    const text = document.createTextNode(i+1);
+                    const text = document.createTextNode("-");
                     btn.appendChild(text);
                     dom.appendChild(btn);
-                    if((i+1 )%3 ===0)
+                    const att = document.createAttribute("class");
+                    att.value = String(i);
+                    document.getElementsByTagName("button")[i].setAttributeNode(att);
+                    if((i+1 )%3 === 0)
                     {
                         dom.appendChild(document.createElement("br"));
                     }
                     btn.onclick = function(){
+                        //button should show X or O
+                        // document.getElementsByTagName("button")[i+2].innerText = move[k];
+                        // k++;
+                        // if(k >= 2)
+                        // {
+                        //     k=0;
+                        // }
+                        
+                        //button disable
+                       
+
+                        //send data
                         room.send("move", i);
                     };
                     

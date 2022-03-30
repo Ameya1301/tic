@@ -15,19 +15,28 @@ class Client2 extends Schema {
 
 
 
-class Turn extends Schema {
+ class Turn extends Schema {
     sid: String;
     
 }
 
 export class Game extends Schema {
-
+    // @type(["string"]) gameArr = new ArraySchema<string>();
     @type({ map: Client2 }) userMap = new MapSchema<Client2>();
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
     @type("string") CurrentTurn = "";
+    @type("string") gameWinner = "";
     @type("number") j = 0;
-    @type("boolean") game;
+    l1 = [];
+    l2 = [];
+
+    // Game(){
+    //     for(let i=0;i<9; i++)
+    //     {
+    //         this.gameArr.push(String(i));
+    //     }
+    // }
 
     createPlayer(client: Client){
         
@@ -37,9 +46,26 @@ export class Game extends Schema {
              
         
     }
-
+   
 
     createTurn(sessionId:string, position: Number){
+
+        
+        var c = 0;
+        this.userMap.forEach((value , key)=>{
+            if(key === sessionId)
+            {
+                if(c === 0)
+                {
+                    this.l1.push(position);
+                    
+                } else {
+                    this.l2.push(position);  
+                }
+            }
+            c++;
+        });
+
         console.log("position: ",position);
         console.log(sessionId);
         // check in turn map if position is used or not if used return false else return true
@@ -49,9 +75,11 @@ export class Game extends Schema {
             var a = new Turn();
             a.sid = sessionId;
             this.turnMap.set(position.toString(), a);
+            
 
             
             this.j++;
+            
             console.log("inserted");
         } else {
             return false;
@@ -68,80 +96,98 @@ export class Game extends Schema {
             [2, 4, 6]
         ]
 
-        if( this.j>=5)
+        this.l1.sort();
+        this.l2.sort();
+        if(this.j>=5)
         {
-            
-                var x,y,z;
-
-            for(let i = 0; i<8; i++)
+        for(let i = 0; i<8; i++)
             {
+                console.log("l1:",this.l1);
+                console.log("l2:",this.l2);
+                var x = winner[i];
+                console.log("X:",x);
+                 if(x.every(val => this.l1.includes(val)))
+                 {
+                     console.log("player 1 wins");
+                     this.gameWinner = sessionId;
+                     this.j = 100;
+                     break;
+                 }
+                 if(x.every(val => this.l2.includes(val)))
+                 {
+                     console.log("player 2 wins");
+                     this.gameWinner = sessionId;
+                     this.j= 100;
+                     break;
+                 }
 
-                this.turnMap.forEach((value, key)=>{
-                    if(winner[i][0].toString() === key)
-                    {
-                        x = value.sid;
-                        console.log(x);
-                    }
-                    else if(winner[i][1].toString() === key)
-                    {
-                        y = value.sid;
-                        console.log(y);
-                    }
-                    else if(winner[i][2].toString() === key)
-                    {
-                        z = value.sid;
-                        console.log(z);
-                    }
-
-
-                });
-                console.log(x, y, z);
-                if(x == y && y == z)
-                {
-                    console.log("winner");
-                    this.game = true;
-                    break;
-                } 
-                else if(this.j>=9) {
-                    console.log("draw");
-                    this.game = false;
-                    break;
-
-                }
             }
         }
+
+        // if( this.j>=5)
+        // {
+            
+        //         var x,y,z;
+
+        //     for(let i = 0; i<8; i++)
+        //     {
+
+        //         this.turnMap.forEach((value, key)=>{
+        //             if(winner[i][0].toString() === key)
+        //             {
+        //                 x = value.sid;
+        //                 console.log(x);
+        //             }
+        //             else if(winner[i][1].toString() === key)
+        //             {
+        //                 y = value.sid;
+        //                 console.log(y);
+        //             }
+        //             else if(winner[i][2].toString() === key)
+        //             {
+        //                 z = value.sid;
+        //                 console.log(i, z);
+        //             }
+
+
+        //         });
+        //         console.log(x, y, z);
+                
+        //         if(x === y && y === z )
+        //         {
+        //             console.log("winner");
+
+
+                    
+        //             this.j = 100;
+        //             break;
+        //         } 
+                
+        //         // else if(this.j>=9) {
+        //         //     console.log("draw");
+                    
+        //         //     break;
+
+        //         // }
+        //     }
+        // }
 
        
       
         console.log("\n\n");
-
-
-      
-        
-        this.turnMap.forEach((value,key)=> {
-            // value.Turn.bin
-            // console.log(value);
-            console.log("sessionid: ", value.sid);
-            console.log("key: ", key);
-        });
-       
-       
-
         return true;
         
     }
 
     playNextTurn(currentSessionId: string){
-       
-        
         this.userMap.forEach( (value, key) => {
 
             if(currentSessionId !== key){
-                this.CurrentTurn = key;
-                
+                this.CurrentTurn = key;        
             }
-        });
+        }); 
     }
+
 
     removePlayer(sessionId: string) {
         this.userMap.delete(sessionId);
@@ -149,50 +195,40 @@ export class Game extends Schema {
     }
 
     
-   
-    
     startGame(maxClients: number){
         if(maxClients === this.userMap.size)
         {   
             this.CurrentTurn = this.userMap.keys().next().value;
-            console.log("Starting current turn: ", this.CurrentTurn);
-          
-            
+       
         }
-      
-            
+              
     }
-    
-   
-
-          
-        
-        
+       
 }
     
-
-
-
 /////////////////////////////////////////////////////////////
 
 export class Tictactoe extends Room {
     maxClients = 2;
    
-    // const userMap = new MapSchema<Client>();
+    
     onCreate(options) {
         console.log("Room Created");
         this.setState(new Game());
 
-        // let a: Map<string,string> = new Map();
-        // a["2"] = "3";
-        // a["1"] = "2";
-        // console.log(a["2"]);
+     
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
             var turn = this.state.createTurn(client.sessionId,message);
             if( turn === true){
+               
+                this.broadcast("l1", this.state.l1);
+                this.broadcast("l2", this.state.l2);
                 this.state.playNextTurn(client.sessionId);
+                this.broadcast("turn",this.state.CurrentTurn);
+                // this.broadcast("pos",message);
+
             } 
             else {
         
