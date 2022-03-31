@@ -1,6 +1,5 @@
-import {Room, Client} from "colyseus";
+import {Room, Client, ServerError} from "colyseus";
 import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
-
 
 
 
@@ -21,26 +20,22 @@ class Client2 extends Schema {
 }
 
 export class Game extends Schema {
-    // @type(["string"]) gameArr = new ArraySchema<string>();
+    
     @type({ map: Client2 }) userMap = new MapSchema<Client2>();
     @type({ map: Turn }) turnMap = new MapSchema<Turn>();
     // @type(CurrentTurn) turn:CurrentTurn = new CurrentTurn();
     @type("string") CurrentTurn = "";
     @type("string") gameWinner = "";
     @type("number") j = 0;
+    @type("string") leftPlayer = "---";
     l1 = [];
     l2 = [];
 
-    // Game(){
-    //     for(let i=0;i<9; i++)
-    //     {
-    //         this.gameArr.push(String(i));
-    //     }
-    // }
+    
 
     createPlayer(client: Client){
         
-
+        this.leftPlayer = "---";
         this.userMap.set(client.sessionId, new Client2(client));
         
              
@@ -75,9 +70,6 @@ export class Game extends Schema {
             var a = new Turn();
             a.sid = sessionId;
             this.turnMap.set(position.toString(), a);
-            
-
-            
             this.j++;
             
             console.log("inserted");
@@ -123,7 +115,7 @@ export class Game extends Schema {
 
             }
         }
-
+        
         // if( this.j>=5)
         // {
             
@@ -180,6 +172,7 @@ export class Game extends Schema {
     }
 
     playNextTurn(currentSessionId: string){
+        
         this.userMap.forEach( (value, key) => {
 
             if(currentSessionId !== key){
@@ -191,7 +184,6 @@ export class Game extends Schema {
 
     removePlayer(sessionId: string) {
         this.userMap.delete(sessionId);
-
     }
 
     
@@ -220,22 +212,25 @@ export class Tictactoe extends Room {
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
-            var turn = this.state.createTurn(client.sessionId,message);
-            if( turn === true){
+            if(client.sessionId === this.state.CurrentTurn)
+            {
+                var turn = this.state.createTurn(client.sessionId,message);
+                if( turn === true){
                
-                this.broadcast("l1", this.state.l1);
-                this.broadcast("l2", this.state.l2);
-                this.state.playNextTurn(client.sessionId);
-                this.broadcast("turn",this.state.CurrentTurn);
-                // this.broadcast("pos",message);
-
+                   this.broadcast("l1", this.state.l1);
+                   this.broadcast("l2", this.state.l2);
+                   this.state.playNextTurn(client.sessionId);
+                   this.broadcast("turn",this.state.CurrentTurn);
+                }
             } 
             else {
-        
+                // throw new ServerError(400, "custom error for random click");
             }
            
 
         });
+
+       
     }
 
     onAuth(client, options, req) {
@@ -252,6 +247,14 @@ export class Tictactoe extends Room {
     }
 
     onLeave (client: Client, consented: boolean) {
+        // console.log(client.sessionId, " is has left");
+        // this.state.playNextTurn(client.sessionId);
+        
+                
+                    this.state.leftPlayer = client.sessionId;       
+                          
+       
+        this.broadcast("left", this.state.leftPlayer);
         this.state.removePlayer(client.sessionId); 
        
      }
@@ -260,3 +263,4 @@ export class Tictactoe extends Room {
         console.log("Dispose tictactoe");
     }
 }
+
