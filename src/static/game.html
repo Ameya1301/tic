@@ -139,10 +139,10 @@
                 }
                 
 
-                // room.onError((code, message)=>{
-                //     console.log("Errorcode: ",code);
-                //     console.log("message: ",message);
-                // });
+                room.onError((code, message)=>{
+                    console.log("Errorcode: ",code);
+                    console.log("message: ",message);
+                });
                 
                 room.onMessage('turn',(currTurn)=>{
                     var dom = document.getElementById('turn');

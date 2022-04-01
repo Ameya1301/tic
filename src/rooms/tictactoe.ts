@@ -224,7 +224,16 @@ export class Tictactoe extends Room {
                 }
             } 
             else {
-                // throw new ServerError(400, "custom error for random click");
+                console.log("throwing an error");
+                // error(400, "custom error for random click");
+                
+                // try{
+                //     // throw Error("custom error for random click");
+                //     throw new ServerError(400, "//////////////////////////////////");
+                    
+                // }catch(e){
+                //     console.log(e);
+                // }
             }
            
 
