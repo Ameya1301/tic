@@ -1,23 +1,22 @@
 import {Room, Client, ServerError} from "colyseus";
 import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
-
+import {RoomAvailable } from "colyseus.js";
+import {updateLobby } from "colyseus";
 
 
 class Client2 extends Schema {
-    client:Client;
-    
+    client:Client;   
     Client2(client){
-        this.client = client;
-        
+        this.client = client; 
     }
 }
-
 
 
  class Turn extends Schema {
     sid: String;
     
 }
+
 
 export class Game extends Schema {
     
@@ -116,56 +115,6 @@ export class Game extends Schema {
             }
         }
         
-        // if( this.j>=5)
-        // {
-            
-        //         var x,y,z;
-
-        //     for(let i = 0; i<8; i++)
-        //     {
-
-        //         this.turnMap.forEach((value, key)=>{
-        //             if(winner[i][0].toString() === key)
-        //             {
-        //                 x = value.sid;
-        //                 console.log(x);
-        //             }
-        //             else if(winner[i][1].toString() === key)
-        //             {
-        //                 y = value.sid;
-        //                 console.log(y);
-        //             }
-        //             else if(winner[i][2].toString() === key)
-        //             {
-        //                 z = value.sid;
-        //                 console.log(i, z);
-        //             }
-
-
-        //         });
-        //         console.log(x, y, z);
-                
-        //         if(x === y && y === z )
-        //         {
-        //             console.log("winner");
-
-
-                    
-        //             this.j = 100;
-        //             break;
-        //         } 
-                
-        //         // else if(this.j>=9) {
-        //         //     console.log("draw");
-                    
-        //         //     break;
-
-        //         // }
-        //     }
-        // }
-
-       
-      
         console.log("\n\n");
         return true;
         
@@ -208,7 +157,6 @@ export class Tictactoe extends Room {
         console.log("Room Created");
         this.setState(new Game());
 
-     
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
@@ -216,7 +164,7 @@ export class Tictactoe extends Room {
             {
                 var turn = this.state.createTurn(client.sessionId,message);
                 if( turn === true){
-               
+                    
                    this.broadcast("l1", this.state.l1);
                    this.broadcast("l2", this.state.l2);
                    this.state.playNextTurn(client.sessionId);

@@ -1,9 +1,13 @@
 import { Server } from "colyseus"
 import {Game, Tictactoe} from "./rooms/tictactoe";
+import {CustomLobby} from "./rooms/lobby";
 import { monitor } from "@colyseus/monitor";
 import basicAuth from "express-basic-auth";
 import express from "express";
 import { createServer } from "http";
+import { LobbyRoom } from "colyseus";
+
+
 const basicAuthMiddleware = basicAuth({
     // list of users and passwords
     users: {
@@ -22,12 +26,22 @@ const gameServer = new Server({
   });
 
 
+
 const port = parseInt(process.env.PORT, 10) || 3000
 // const gameServer = new Server()
 
 app.use("/colyseus", basicAuthMiddleware, monitor());
-// gameServer.use("/colyseus", monitor());
-gameServer.listen(port)
+
+
+//
+gameServer.define("lobby",CustomLobby);
+gameServer.define("tictactoe", Tictactoe).enableRealtimeListing();
+//
+
+// gameServer.define("tictactoe", Tictactoe);
+
+
+gameServer.listen(port); 
 console.log(`[GameServer] Listening on Port: ${port}`);
 
-gameServer.define("tictactoe", Tictactoe);
+

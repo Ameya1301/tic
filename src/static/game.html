@@ -8,6 +8,7 @@
     <script type="text/javascript" src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
 </head>
 <body>
+    <button onclick="joinLobby()">join Lobby</button>
     <button onclick="join()"> joined</button>
     <button onclick="leave()">leave</button>
     <div id="turn"></div>
@@ -19,18 +20,80 @@
 
 
     <script>
-
-
+        //
+        // import { Client, RoomAvailable } from "colyseus.js";
+        //
+        
         var host = window.document.location.host.replace(/:.*/, '');
         console.log(host);
         // var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':'+location.port : ''));
         var client = new Colyseus.Client('ws://localhost:3000');
         var room;
         var currentClient;
+        //
+        function joinLobby()
+        {
+            var lobby; 
+            let allRooms= [];
+            // var lobby = client.joinOrCreate("lobby");
+            // client.lobby.onMessage("rooms",(rooms)=>{
+            //     console.log(rooms);
+            // });
+
+            client.joinOrCreate("lobby").then(room_instance=>{
+                lobby = room_instance;
+                console.log(lobby);
+                
+                console.log('sending',lobby.sessionId);
+                lobby.send("id", lobby.sessionId);
+
+                lobby.onStateChange((state) => {
+                    console.log("Custom lobby state:", state);
+                 });
+
+
+                lobby.onMessage('temp',(message)=>{
+                    console.log(message);
+                });
+                 
+
+                lobby.onMessage("rooms", (rooms) => {
+                    allRooms = rooms;
+                    console.log("Received full list of rooms:", allRooms);
+                 });
+
+
+                lobby.onMessage('joined Successfully', (message) => {
+                    console.log("message received from server:");
+                    currentClient = message;
+                    console.log(message);
+                });
+
+
+                lobby.onMessage("reservation",(reservation)=>{
+                    console.log("from client who got reservation: ",reservation);
+
+                    client.consumeSeatReservation(reservation).then(room => {
+                        console.log("joined successfully", room);
+
+                        
+                    }).catch(e => {
+                        console.error("join error", e);
+                    });    
+                });
+            });
+                
+                // client.consumeSeatReservation(reservation).then(room => {
+                //     console.log("joined successfully", room);
+                // }).catch(e => {
+                //     console.error("join error", e);
+                // });
+        }
+        
+
         function join() {
             client.joinOrCreate("tictactoe").then((room_instance, client)=> {
 
-               
                 console.log("joined the room");
                 room = room_instance;
                 console.log("joined Successfully");
@@ -44,14 +107,7 @@
 
                 //game display
                 addGame();
-               
-
-                // onAdd
-                // room.state.turnMap.onAdd = function (turn, turnId){
-                //     console.log('changes recd:',turn, turnId);
-                // }
-
-
+ 
                 room.state.listen("CurrentTurn", (currentValue, previousValue) => {
                     var dom = document.getElementById("result");
                     if(this.room.sessionId === currentValue){
@@ -109,7 +165,6 @@
                     console.log(playerLeft);
                     var dom = document.getElementById("result");
                     dom.innerText = "other player left so you won the game";
-                    
                 });
 
                 
@@ -132,8 +187,8 @@
                 function render(l,symbol){
                     for(let i=0; i<l.length; i++)
                     {
-                        document.getElementsByTagName("button")[l[i]+2].innerText = symbol;
-                        document.getElementsByTagName("button")[l[i]+2].disabled = true;
+                        document.getElementsByTagName("button")[l[i]+3].innerText = symbol;
+                        document.getElementsByTagName("button")[l[i]+3].disabled = true;
                         
                     }
                 }
