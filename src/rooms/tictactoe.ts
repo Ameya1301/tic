@@ -36,7 +36,8 @@ export class Game extends Schema {
         
         this.leftPlayer = "---";
         this.userMap.set(client.sessionId, new Client2(client));
-        
+        // console.log("client: \n\n\n\n",client);
+        // console.log("createPlayer:\n\n\n\n ",this.userMap.get(client.sessionId));
              
         
     }
@@ -91,7 +92,7 @@ export class Game extends Schema {
         this.l2.sort();
         if(this.j>=5)
         {
-        for(let i = 0; i<8; i++)
+        for(let i = 0; i<9; i++)
             {
                 console.log("l1:",this.l1);
                 console.log("l2:",this.l2);
@@ -156,7 +157,6 @@ export class Tictactoe extends Room {
     onCreate(options) {
         console.log("Room Created");
         this.setState(new Game());
-
         
         this.onMessage("move", (client, message) => {
             console.log("from ", client.sessionId , " received: ", message);
@@ -208,7 +208,7 @@ export class Tictactoe extends Room {
         // this.state.playNextTurn(client.sessionId);
         
                 
-                    this.state.leftPlayer = client.sessionId;       
+        this.state.leftPlayer = client.sessionId;       
                           
        
         this.broadcast("left", this.state.leftPlayer);

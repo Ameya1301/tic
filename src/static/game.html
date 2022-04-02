@@ -30,11 +30,11 @@
         var client = new Colyseus.Client('ws://localhost:3000');
         var room;
         var currentClient;
+        var lobby; 
+        // let allRooms= [];
         //
         function joinLobby()
         {
-            var lobby; 
-            let allRooms= [];
             // var lobby = client.joinOrCreate("lobby");
             // client.lobby.onMessage("rooms",(rooms)=>{
             //     console.log(rooms);
@@ -63,11 +63,11 @@
                  });
 
 
-                lobby.onMessage('joined Successfully', (message) => {
-                    console.log("message received from server:");
-                    currentClient = message;
-                    console.log(message);
-                });
+                // lobby.onMessage('joined Successfully', (message) => {
+                //     console.log("message received from server:");
+                //     currentClient = message;
+                //     console.log(message);
+                // });
 
 
                 lobby.onMessage("reservation",(reservation)=>{
@@ -75,7 +75,7 @@
 
                     client.consumeSeatReservation(reservation).then(room => {
                         console.log("joined successfully", room);
-
+                        afterJoin(room, client);
                         
                     }).catch(e => {
                         console.error("join error", e);
@@ -83,11 +83,7 @@
                 });
             });
                 
-                // client.consumeSeatReservation(reservation).then(room => {
-                //     console.log("joined successfully", room);
-                // }).catch(e => {
-                //     console.error("join error", e);
-                // });
+                
         }
         
 
@@ -96,142 +92,147 @@
 
                 console.log("joined the room");
                 room = room_instance;
-                console.log("joined Successfully");
-         
-                
-                this.room.onMessage("joined Successfully", (message) => {
-                    console.log("message received from server:");
-                    currentClient = message;
-                    console.log(message);
-                })
-
-                //game display
-                addGame();
- 
-                room.state.listen("CurrentTurn", (currentValue, previousValue) => {
-                    var dom = document.getElementById("result");
-                    if(this.room.sessionId === currentValue){
-                        console.log("player: ",currentValue);
-                        //player display turn
-                        const h1 = document.createElement("h1");
-                        const text = document.createTextNode("Your Turn");
-                        h1.appendChild(text);
-                        dom.appendChild(h1);
-                        
-                    // }
-                    
-                    } else {
-                       
-                        dom.innerText = "";
-                    }
-                });
-                
-                room.state.listen("j", (currentValue, previousValue) => {
-                    var dom = document.getElementById("player");
-                    var domr = document.getElementById("result");
-                    console.log("current value of j: ",currentValue);
-                    if(currentValue === 100)
-                    {
-                        ///remove h1 in domr
-                        domr.innerText = "Other player won";
-
-                        dom.innerText = "Game Over";
-                        
-                    }
-                    else if(currentValue >= 9)
-                    {
-                        domr.innerText = "";
-                        dom.innerText = "Draw";
-                    }
-                });
-
-
-                room.state.listen("gameWinner", (currentValue, previousValue) => {
-                    var dom = document.getElementById("player");
-                    // console.log("from game winner: ",currentValue);
-                    // console.log(this.room.sessionId);
-                    if(this.room.sessionId === currentValue){
-                        
-                        const h1 = document.createElement("h1");
-                        const text = document.createTextNode("Winner");
-                        h1.appendChild(text);
-                        dom.appendChild(h1);
-                        
-                    // }
-                    
-                    } 
-                });
-                room.onMessage("left", (playerLeft)=>{
-                    console.log(playerLeft);
-                    var dom = document.getElementById("result");
-                    dom.innerText = "other player left so you won the game";
-                });
-
-                
-
-                room.onLeave((code) => {
-                    // console.log("client left the room");
-                    var dom = document.getElementById("result");
-                    dom.innerText = "You got disconnected";
-                });
-              
-
-                room.onMessage('l1',(l1)=>{
-                    render(l1,"X");
-                });
-
-                room.onMessage('l2',(l2)=>{
-                    render(l2,"O");
-                });
-
-                function render(l,symbol){
-                    for(let i=0; i<l.length; i++)
-                    {
-                        document.getElementsByTagName("button")[l[i]+3].innerText = symbol;
-                        document.getElementsByTagName("button")[l[i]+3].disabled = true;
-                        
-                    }
-                }
-                
-
-                room.onError((code, message)=>{
-                    console.log("Errorcode: ",code);
-                    console.log("message: ",message);
-                });
-                
-                room.onMessage('turn',(currTurn)=>{
-                    var dom = document.getElementById('turn');
-                    dom.innerText = "player: "+ currTurn;
-                });
-
-               
-                                             
+                console.log("joined Successfully"); 
+                afterJoin(room, client);                              
             });       
         }
             
+        function afterJoin(room, client){
+
+            //game display
+            addGame();
+            console.log("from the afterjoin fn room: \n",room);
+
+
+            this.room.onMessage("joined Successfully", (message) => {
+                    console.log("message received from server:");
+                    currentClient = message;
+                    console.log(message);
+                });
+
+                
  
-        function addGame () {
-               var dom = document.getElementById("game");
-               for(let i=0; i<9; i++)
-               {    
-                    const btn = document.createElement("button");
-                    const text = document.createTextNode("-");
-                    btn.appendChild(text);
-                    dom.appendChild(btn);
-                    const att = document.createAttribute("class");
-                    att.value = String(i);
-                    document.getElementsByTagName("button")[i].setAttributeNode(att);
-                    if((i+1 )%3 === 0)
-                    {
-                        dom.appendChild(document.createElement("br"));
-                    }
-                    btn.onclick = function(){
-                 
-                        //send data
-                        room.send("move", i);
-                    };
+            room.state.listen("CurrentTurn", (currentValue, previousValue) => {
+                var dom = document.getElementById("result");
+                if(this.room.sessionId === currentValue){
+                    console.log("player: ",currentValue);
+                    //player display turn
+                    const h1 = document.createElement("h1");
+                    const text = document.createTextNode("Your Turn");
+                    h1.appendChild(text);
+                    dom.appendChild(h1);
+                    
+                // }
+                
+                } else {
+                    
+                    dom.innerText = "";
+                }
+            });
+                
+            room.state.listen("j", (currentValue, previousValue) => {
+                var dom = document.getElementById("player");
+                var domr = document.getElementById("result");
+                console.log("current value of j: ",currentValue);
+                if(currentValue === 100)
+                {
+                    ///remove h1 in domr
+                    domr.innerText = "Other player won";
+
+                    dom.innerText = "Game Over";
                     
                 }
+                else if(currentValue >= 9)
+                {
+                    domr.innerText = "";
+                    dom.innerText = "Draw";
+                }
+            });
+
+
+            room.state.listen("gameWinner", (currentValue, previousValue) => {
+                var dom = document.getElementById("player");
+                // console.log("from game winner: ",currentValue);
+                // console.log(this.room.sessionId);
+                if(this.room.sessionId === currentValue){
+                    
+                    const h1 = document.createElement("h1");
+                    const text = document.createTextNode("Winner");
+                    h1.appendChild(text);
+                    dom.appendChild(h1);
+                    
+                // }
+                
+                } 
+            });
+
+
+            room.onMessage("left", (playerLeft)=>{
+                console.log(playerLeft);
+                var dom = document.getElementById("result");
+                dom.innerText = "other player left so you won the game";
+            });
+ 
+
+            room.onLeave((code) => {
+                // console.log("client left the room");
+                var dom = document.getElementById("result");
+                dom.innerText = "You got disconnected";
+            });
+              
+
+            room.onMessage('l1',(l1)=>{
+                render(l1,"X");
+            });
+
+            room.onMessage('l2',(l2)=>{
+                render(l2,"O");
+            });
+
+            function render(l,symbol){
+                for(let i=0; i<l.length; i++)
+                {
+                    document.getElementsByTagName("button")[l[i]+3].innerText = symbol;
+                    document.getElementsByTagName("button")[l[i]+3].disabled = true;
+                    
+                }
+            }
+                
+
+            room.onError((code, message)=>{
+                console.log("Errorcode: ",code);
+                console.log("message: ",message);
+            });
+            
+            room.onMessage('turn',(currTurn)=>{
+                var dom = document.getElementById('turn');
+                dom.innerText = "player: "+ currTurn;
+            });
+
+        }
+ 
+        function addGame () {
+            var dom = document.getElementById("game");
+            for(let i=0; i<9; i++)
+            {    
+                const btn = document.createElement("button");
+                const text = document.createTextNode("-");
+                btn.appendChild(text);
+                dom.appendChild(btn);
+                const att = document.createAttribute("class");
+                att.value = String(i);
+                document.getElementsByTagName("button")[i].setAttributeNode(att);
+                if((i+1 )%3 === 0)
+                {
+                    dom.appendChild(document.createElement("br"));
+                }
+                btn.onclick = function(){
+                
+                    //send data
+                    room.send("move", i);
+                };
+                
+            }
         }
 
         function leave(){
