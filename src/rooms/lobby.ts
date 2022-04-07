@@ -49,12 +49,12 @@ export class CustomLobby extends LobbyRoom {
     async onJoin(client, options) {
         // console.log("\n\n\n\n\n\n\nfrom on join: ",client);
         this.users.set(client.sessionId,client);
-        console.log("\n\n\n\n\n\n\nfrom after on join: ",this.users.get(client.sessionId).sessionId);
+        // console.log("\n\n\n\n\n\n\nfrom after on join: ",this.users.get(client.sessionId).sessionId);
     //    console.log(this.rooms);
         
         if(this.maxClients === this.users.size)
         {
-            const room = await matchMaker.createRoom("tictactoe",{});
+            let room = await matchMaker.createRoom("tictactoe",{});
             console.log("room:\n",room);
             
             
@@ -66,7 +66,21 @@ export class CustomLobby extends LobbyRoom {
                 if(this.j%2 === 0)
                 {
                     // setTimeout()
-                    const reservation = await matchMaker.reserveSeatFor(room,{});
+                    let reservation = await matchMaker.reserveSeatFor(room,{});
+                    console.log("reservation:\n", reservation);
+                    client.send('reservation',reservation);
+                }
+                this.j++;
+            }
+
+            this.j=0;
+            room = await matchMaker.createRoom("tictactoe",{});
+            for (let key of this.users){
+                let client = key[1];
+                if(this.j%2 !== 0)
+                {
+                    // setTimeout()
+                    let reservation = await matchMaker.reserveSeatFor(room,{});
                     console.log("reservation:\n", reservation);
                     client.send('reservation',reservation);
                 }

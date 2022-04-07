@@ -28,9 +28,10 @@
         console.log(host);
         // var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':'+location.port : ''));
         var client = new Colyseus.Client('ws://localhost:3000');
-        var room;
+        var room1;
         var currentClient;
         var lobby; 
+        var j;
         // let allRooms= [];
         //
         function joinLobby()
@@ -91,9 +92,9 @@
             client.joinOrCreate("tictactoe").then((room_instance, client)=> {
 
                 console.log("joined the room");
-                room = room_instance;
+                // room = room_instance;
                 console.log("joined Successfully"); 
-                afterJoin(room, client);                              
+                afterJoin(room_instance, client);                              
             });       
         }
             
@@ -101,10 +102,11 @@
 
             //game display
             addGame();
-            console.log("from the afterjoin fn room: \n",room);
+            room1 = room;
+            // console.log("from the afterjoin fn room: \n",room);
 
-
-            this.room.onMessage("joined Successfully", (message) => {
+            // this.room.onMessage("joined Successfully", (message) => {
+            room.onMessage("joined Successfully", (message) => {
                     console.log("message received from server:");
                     currentClient = message;
                     console.log(message);
@@ -114,7 +116,9 @@
  
             room.state.listen("CurrentTurn", (currentValue, previousValue) => {
                 var dom = document.getElementById("result");
-                if(this.room.sessionId === currentValue){
+                //if(this.room.sessionId === currentValue){
+                // if(room.sessionId === currentValue && j !== 100){
+                if(room.sessionId === currentValue){
                     console.log("player: ",currentValue);
                     //player display turn
                     const h1 = document.createElement("h1");
@@ -128,15 +132,18 @@
                     
                     dom.innerText = "";
                 }
+               
             });
                 
             room.state.listen("j", (currentValue, previousValue) => {
                 var dom = document.getElementById("player");
                 var domr = document.getElementById("result");
                 console.log("current value of j: ",currentValue);
+                j = currentValue;
                 if(currentValue === 100)
                 {
                     ///remove h1 in domr
+                    // domr.removeChild("h1");
                     domr.innerText = "Other player won";
 
                     dom.innerText = "Game Over";
@@ -151,10 +158,13 @@
 
 
             room.state.listen("gameWinner", (currentValue, previousValue) => {
+                //
+                console.log("got the value: ", currentValue);
                 var dom = document.getElementById("player");
                 // console.log("from game winner: ",currentValue);
                 // console.log(this.room.sessionId);
-                if(this.room.sessionId === currentValue){
+                // if(this.room.sessionId === currentValue){
+                if(room.sessionId === currentValue){
                     
                     const h1 = document.createElement("h1");
                     const text = document.createTextNode("Winner");
@@ -197,7 +207,24 @@
                     
                 }
             }
-                
+
+            
+            // room.state.listen(`userMap[${client.sessionId}]`,(curr,prev)=>{
+            //     console.log("usermap from server:curr: ", curr);
+            //     console.log("usermap from server:prev: ", prev);
+            // });
+
+
+
+            
+
+            // room.state.onChange = (changes) => {
+            //     console.log("onstatechange changes: \n\n");
+            //     changes.forEach(change => {
+            //         console.log(change);
+                    
+            //     });
+            // }
 
             room.onError((code, message)=>{
                 console.log("Errorcode: ",code);
@@ -229,17 +256,18 @@
                 btn.onclick = function(){
                 
                     //send data
-                    room.send("move", i);
+                    room1.send("move", i);
+                    room1.send("testing","1");
                 };
                 
             }
         }
 
         function leave(){
-            console.log(room);
-            if(room) {
+            console.log(room1);
+            if(room1) {
                 // room.send("left",room.sessionId);
-                room.connection.close();
+                room1.connection.close();
 
                 console.log("ending room");
                 // room.sessionId

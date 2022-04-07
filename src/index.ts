@@ -5,7 +5,7 @@ import { monitor } from "@colyseus/monitor";
 import basicAuth from "express-basic-auth";
 import express from "express";
 import { createServer } from "http";
-import { LobbyRoom } from "colyseus";
+// import { LobbyRoom } from "colyseus";
 
 
 const basicAuthMiddleware = basicAuth({
@@ -27,7 +27,8 @@ const gameServer = new Server({
 
 
 
-const port = parseInt(process.env.PORT, 10) || 3000
+// const port = parseInt(process.env.PORT, 10) || 3000;
+const port = 3000;
 // const gameServer = new Server()
 
 app.use("/colyseus", basicAuthMiddleware, monitor());
@@ -41,7 +42,7 @@ gameServer.define("tictactoe", Tictactoe).enableRealtimeListing();
 // gameServer.define("tictactoe", Tictactoe);
 
 
-gameServer.listen(port); 
-console.log(`[GameServer] Listening on Port: ${port}`);
+// gameServer.listen(port); 
+// console.log(`[GameServer] Listening on Port: ${port}`);
 
-
+export default gameServer;
